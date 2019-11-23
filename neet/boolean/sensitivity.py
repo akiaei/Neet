@@ -92,14 +92,14 @@ class SensitivityMixin(object):
         distance = self.distance
         neighbors = self.hamming_neighbors(state)
         #neighbors_copy = [neighbor.copy() for neighbor in neighbors]
-        for t in range(timesteps):
+        for t in range(timesteps + 1):
             nextState = self._unsafe_update(state)
 
         # count sum of differences found in neighbors of the original
         s = 0.
         #debugging_index = 0
         for neighbor in neighbors:
-            for t in range(timesteps):
+            for t in range(timesteps + 1):
                 if transitions is not None:
                     newState = transitions[encoder(neighbor)]
                 else:
@@ -664,10 +664,6 @@ class SensitivityMixin(object):
         if states is not None:
             num_states = 0
             states = list(states)
-            #print("type of states: ", type(states))
-            #print("len of states: ", type(states))
-            #print("len of states: ", len(states))
-            #print("len of states: ", len(states))
             if calc_trans:
                 decoder = self.decode
                 trans = list(map(decoder, self.transitions))
@@ -679,14 +675,12 @@ class SensitivityMixin(object):
                 num_states += 1
 
             if num_states is not 0:
-                #print("num_states: ", num_states)
-                #print("2^num_states: ", 2 ** num_states)
                 #CANNOT USE NP.POW()
                 #IT CALLS C-FUNCTIONS WHICH DO NOT ALLOW FOR UNLIMITED-SIZED-INTEGERS
                 #AND VERY QUICKLY RESULTS IN AN OVERFLOW TO 0
                 s = s / (2 ** num_states)#np.power(2, num_states)
             else:
-                raise ValueError("Number of states is somehow not 'None' but also not > 0")
+                raise ValueError("Number of states is somehow not 'None', but also not > 0")
             return s
 
         else:
@@ -716,8 +710,7 @@ class SensitivityMixin(object):
             if s > upper_bound or s < 0:
                 raise ValueError('This value of S should not be possible and the code is therefore wrong')
 
-        print("s / upper_bound = normalized average c-sensitivity: ", s / upper_bound)
-        #print("s2 / upper_bound = normalized average c-sensitivity: ", s2 / upper_bound)
+        #print("s / upper_bound = normalized average c-sensitivity: ", s / upper_bound)
         return s
         #yield s / upper_bound # yields the normalized average c-sensitivity
 
@@ -726,24 +719,26 @@ class SensitivityMixin(object):
             max_c = self.size
 
         plt.title('Derrida Plot')
+        plt.xlabel('C')
+        plt.ylabel('Sensitivity')
         y_vals = []
 
-        """if transitions is not None:
-            for x in range(max_c):
-                y_vals.append(self.Average_c_sensitivity(self, transitions))
-        else:
-            for x in range(max_c):
-                y_vals.append(self.Average_c_sensitivity(self))"""
         for x in range(max_c):
                 y_vals.append(self.Average_c_sensitivity(states=None, calc_trans=True, c=x))            
 
         print(y_vals)
+        plt.show()
+
     def Extended_Time_Plot(self, max_timesteps=4, transitions=None): #X-Axis = c value, Y-Axis = output of Extended_Time
-        if max_c is None:
-            max_c = self.size
 
         plt.title('Extended_Time_Plot')
+        plt.xlabel('Time-steps')
+        plt.ylabel('Sensitivity')
         y_vals = []
 
-        for x in range(max_timesteps):
-            y_vals.append(self.average_sensitivity(states=None, weights=None, calc_trans=True, timesteps=x))
+        for x in range(max_timesteps + 1):
+            q = self.average_sensitivity(states=None, weights=None, calc_trans=True, timesteps=x)
+            y_vals.append(q)
+            print("Q: ", q)
+
+        plt.show()
