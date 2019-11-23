@@ -722,10 +722,13 @@ class SensitivityMixin(object):
         plt.xlabel('C')
         plt.ylabel('Sensitivity')
         y_vals = []
+        x_vals = []
 
         for x in range(max_c):
-                y_vals.append(self.Average_c_sensitivity(states=None, calc_trans=True, c=x))            
+                y_vals.append(self.Average_c_sensitivity(states=None, calc_trans=True, c=x))
+                x_vals.append(x)           
 
+        plt.plot(x_vals, y_vals)
         print(y_vals)
         plt.show()
 
@@ -735,10 +738,16 @@ class SensitivityMixin(object):
         plt.xlabel('Time-steps')
         plt.ylabel('Sensitivity')
         y_vals = []
+        x_vals = []
 
         for x in range(max_timesteps + 1):
             q = self.average_sensitivity(states=None, weights=None, calc_trans=True, timesteps=x)
             y_vals.append(q)
+            x_vals.append(x)
             print("Q: ", q)
 
+        print(y_vals)
+
+        plt.plot(x_vals, y_vals)
         plt.show()
+        #return plt
