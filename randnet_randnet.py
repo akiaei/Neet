@@ -149,6 +149,7 @@ class FixedMeanDegree(TopologyRandomizer):
     """
     Generate a topology with the same mean degree.
     """
+    # Honestly, brilliant implementation here Doug. Elegant AF
     def _randomize(self):
         n = len(self.graph)
         edgeindices = np.random.choice(n*n, self.graph.size(), replace=False)
@@ -159,6 +160,70 @@ class FixedMeanDegree(TopologyRandomizer):
         return G
 
 AbstractRandomizer.register(FixedMeanDegree)
+
+# <W I P>
+class FixedOutDegree(TopologyRandomizer):
+    """
+    Generate a topology with the exact same per-node out-degree.
+    """
+    #len(self.graph) returns number of nodes
+    #self.graph.size() returns number of edges
+    def _randomize(self):
+        n = len(self.graph)
+        outDegreeSequence = [sum(1 for _ in self.graph.successors(x)) for x in range(n)]
+        # Returns a list containing the out-degree of each node in the graph.
+        # outDegreeSequence[q] contains the number of outward-facing edges from
+        # q to any other nodes
+
+        edgeList = []
+        for u in range(len(self.graph)):
+            edgeList.extend([(u, x) for x in np.random.choice(np.delete(u, np.arange(n)), outDegreeSequence[u], replace=False))])
+        # Basically, it goes through each edge u and creates a list of unique tuples
+        # of the form (u, x) where x is any edge != u. 
+        # "np.delete(u, np.arange(n))" returns a 1D array from 0 to n with the element u 
+        # taken out.
+        # The number of times this is done for each edge is determined by that edge's 
+        # out-degree established above. That list of tuples is then concatenated with 
+        # the rest of the edgeList
+
+        G = nx.DiGraph()
+        G.add_nodes_from(range(n))
+        G.add_edges_from(edgeList)
+        return G
+
+AbstractRandomizer.register(FixedOutDegree)
+
+class FixedInDegree(TopologyRandomizer):
+    """
+    Generate a topology with the exact same per-node in-degree.
+    """
+    #len(self.graph) returns number of nodes
+    #self.graph.size() returns number of edges
+    def _randomize(self):
+        n = len(self.graph)
+        inDegreeSequence = [sum(1 for _ in self.graph.predeccessors(x)) for x in range(n)]
+        # Returns a list containing the in-degree of each node in the graph.
+        # inDegreeSequence[q] contains the number of incoming edges from any
+        # other nodes to q
+
+        edgeList = []
+        for u in range(len(self.graph)):
+            edgeList.extend([(x, u) for x in np.random.choice(np.delete(u, np.arange(n)), inDegreeSequence[u], replace=False))])
+        # Basically, it goes through each edge u and creates a list of unique tuples
+        # of the form (x, u) where x is any edge != u. 
+        # "np.delete(u, np.arange(n))" returns a 1D array from 0 to n with the element u 
+        # taken out.
+        # The number of times this is done for each edge is determined by that edge's 
+        # in-degree established above. That list of tuples is then concatenated with 
+        # the rest of the edgeList
+
+        G = nx.DiGraph()
+        G.add_nodes_from(range(n))
+        G.add_edges_from(edgeList)
+        return G
+
+AbstractRandomizer.register(FixedInDegree)
+# </W I P>
 
 class NetworkRandomizer(AbstractRandomizer):
     def __init__(self, network, topogen=None, constraints=list(), timeout=1000, p=0.5):
