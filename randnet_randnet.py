@@ -3,6 +3,7 @@ from neet.boolean import LogicNetwork
 import neet
 import networkx as nx
 import numpy as np
+#import Queue as Q
 
 class TimeoutError(RuntimeError):
     """
@@ -177,7 +178,7 @@ class FixedOutDegree(TopologyRandomizer):
 
         edgeList = []
         for u in range(len(self.graph)):
-            edgeList.extend([(u, x) for x in np.random.choice(np.delete(u, np.arange(n)), outDegreeSequence[u], replace=False))])
+            edgeList.extend([(u, x) for x in np.random.choice(np.delete(u, np.arange(n)), outDegreeSequence[u], replace=False)])
         # Basically, it goes through each edge u and creates a list of unique tuples
         # of the form (u, x) where x is any edge != u. 
         # "np.delete(u, np.arange(n))" returns a 1D array from 0 to n with the element u 
@@ -201,14 +202,14 @@ class FixedInDegree(TopologyRandomizer):
     #self.graph.size() returns number of edges
     def _randomize(self):
         n = len(self.graph)
-        inDegreeSequence = [sum(1 for _ in self.graph.predeccessors(x)) for x in range(n)]
+        inDegreeSequence = [sum(1 for _ in self.graph.predecessors(x)) for x in range(n)]
         # Returns a list containing the in-degree of each node in the graph.
         # inDegreeSequence[q] contains the number of incoming edges from any
         # other nodes to q
 
         edgeList = []
         for u in range(len(self.graph)):
-            edgeList.extend([(x, u) for x in np.random.choice(np.delete(u, np.arange(n)), inDegreeSequence[u], replace=False))])
+            edgeList.extend([(x, u) for x in np.random.choice(np.delete(u, np.arange(n)), inDegreeSequence[u], replace=False)])
         # Basically, it goes through each edge u and creates a list of unique tuples
         # of the form (x, u) where x is any edge != u. 
         # "np.delete(u, np.arange(n))" returns a 1D array from 0 to n with the element u 
@@ -257,6 +258,29 @@ class NetworkRandomizer(AbstractRandomizer):
 
 AbstractRandomizer.register(NetworkRandomizer)
 
-class CustomRandomizer(AbstractRandomizer):
-    def __init__(self, network, topogen=None, constraints=list(), timeout=1000, p=0.5):
+#class CustomRandomizer(AbstractRandomizer):
+    #def __init__(self, network, topogen=None, constraints=list(), timeout=1000, p=0.5):
         
+
+def testFID(network):
+    N, m, p = 100, 10, 0.15
+
+    nxl = len(network.graph)
+
+    InNodeArray = np.sort([sum(1 for _ in network.graph.predecessors(x)) for x in range(nxl)])
+    boolFlag = False
+    for x in range(10):
+        newFIDrandomizer = FixedInDegree(network)
+        nxw = len(newFIDrandomizer.graph)
+        InNodeArrayTwo = np.sort([sum(1 for _ in newFIDrandomizer.graph.predecessors(x)) for x in range(nxw)])
+        if (InNodeArray == InNodeArrayTwo):
+            print(InNodeArray, "\n", InNodeArrayTwo)
+            boolFlag = True
+
+        if boolFlag:
+            print("F")
+        else:
+            print("!")
+            #print(network.graph)
+            #print(newFIDrandomizer.graph)
+            print(InNodeArrayTwo)
