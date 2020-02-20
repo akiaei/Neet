@@ -263,7 +263,6 @@ AbstractRandomizer.register(NetworkRandomizer)
         
 
 def testFID(network):
-    N, m, p = 100, 10, 0.15
 
     nxl = len(network.graph)
 
